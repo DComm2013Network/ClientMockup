@@ -393,16 +393,19 @@ void getUDP() {
 	case 11:
 		memcpy(bufPlayerAllUpdate, packet + sizeof(packet_t), sizeof(PKT_ALL_POS_UPDATE));
 		i = myPlayerNumber;
-			for (i = 0; i < MAX_PLAYERS; ++i) {
-
-		printf("Packet 11 - player %d:\n\tfloor: %d\n\tplayers_on_floor: %d\n\txPos: %d\n\txVel: %f\n\tyPos: %d\n\tyVel: %f\n\n",i,
-				bufPlayerAllUpdate->floor, bufPlayerAllUpdate->players_on_floor[i], bufPlayerAllUpdate->xPos[i],
-				bufPlayerAllUpdate->xVel[i], bufPlayerAllUpdate->yPos[i], bufPlayerAllUpdate->yVel[i]);
+		for (i = 0; i < MAX_PLAYERS; ++i) {
+			if (bufPlayerAllUpdate->players_on_floor[i] == 1) {
+				printf(
+						"Packet 11 - player %d:\n\tfloor: %d\n\tplayers_on_floor: %d\n\txPos: %d\n\txVel: %f\n\tyPos: %d\n\tyVel: %f\n\n",
+						i, bufPlayerAllUpdate->floor, bufPlayerAllUpdate->players_on_floor[i],
+						bufPlayerAllUpdate->xPos[i], bufPlayerAllUpdate->xVel[i], bufPlayerAllUpdate->yPos[i],
+						bufPlayerAllUpdate->yVel[i]);
 			}
+		}
 
 		myFloor = bufPlayerAllUpdate->floor;
-		myPosx = bufPlayerAllUpdate->xPos[i];
-		myPosy = bufPlayerAllUpdate->yPos[i];
+		myPosx = bufPlayerAllUpdate->xPos[myPlayerNumber];
+		myPosy = bufPlayerAllUpdate->yPos[myPlayerNumber];
 		break;
 
 	default:

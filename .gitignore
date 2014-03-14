@@ -20,3 +20,4 @@
 #Codeblocks
 *.cbp
 *.layout
+/Debug

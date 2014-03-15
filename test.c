@@ -160,6 +160,44 @@ void getInput() {
 		send(s, bufUpdatePlayer, sizeof(PKT_READY_STATUS), 0);
 		break;
 
+	case 6:
+
+
+		bufPlayerPos->packet = 10;
+		bufPlayerPos->floor = myFloor;
+		bufPlayerPos->player_number = myPlayerNumber;
+		bufPlayerPos->xPos = myPosx;
+		bufPlayerPos->xVel = myVelx;
+		bufPlayerPos->yPos = myPosy+10;
+		bufPlayerPos->yVel = myVely+10;
+
+		printf(
+				"Send packet 10:\n\tPlayer number: %d\n\tFloor: %d\n\tnew x position: %d\n\tnew y position: %d\n\tnew x velocity: %f\n\tnew y velocity: %f\n\n",
+				bufPlayerPos->player_number, bufPlayerPos->floor, bufPlayerPos->xPos, bufPlayerPos->yPos,
+				bufPlayerPos->xVel, bufPlayerPos->yVel);
+
+		sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
+		break;
+
+	case 7:
+
+
+			bufPlayerPos->packet = 10;
+			bufPlayerPos->floor = myFloor;
+			bufPlayerPos->player_number = myPlayerNumber;
+			bufPlayerPos->xPos = myPosx+10;
+			bufPlayerPos->xVel = myVelx+10;
+			bufPlayerPos->yPos = myPosy+10;
+			bufPlayerPos->yVel = myVely+10;
+
+			printf(
+					"Send packet 10:\n\tPlayer number: %d\n\tFloor: %d\n\tnew x position: %d\n\tnew y position: %d\n\tnew x velocity: %f\n\tnew y velocity: %f\n\n",
+					bufPlayerPos->player_number, bufPlayerPos->floor, bufPlayerPos->xPos, bufPlayerPos->yPos,
+					bufPlayerPos->xVel, bufPlayerPos->yVel);
+
+			sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
+			break;
+
 	case 8:
 		for (i = 0; i < MAX_OBJECTIVES; ++i) {
 			bufGameStatus->objectives_captured[i] = 0;
@@ -327,11 +365,14 @@ void getReply() {
 		recv(s, bufPlayerUpdate, sizeof(PKT_PLAYERS_UPDATE), 0);
 		i = myPlayerNumber;
 
-		//for (i = 0; i < 1; ++i) {
-		printf("Packet 3 - Player %d:\n\tPlayer_name: %s\n\tPlayer_team: %d\n\tplayer_valid: %d\n\treadystatus: %d\n\n",
-				i, bufPlayerUpdate->otherPlayers_name[i], bufPlayerUpdate->otherPlayers_teams[i],
-				bufPlayerUpdate->player_valid[i], bufPlayerUpdate->readystatus[i]);
-		//	}
+		for (i = 0; i < MAX_PLAYERS; ++i) {
+			if (bufPlayerUpdate->player_valid[i] == 1) {
+				printf(
+						"Packet 3 - Player %d:\n\tPlayer_name: %s\n\tPlayer_team: %d\n\tplayer_valid: %d\n\treadystatus: %d\n\n",
+						i, bufPlayerUpdate->otherPlayers_name[i], bufPlayerUpdate->otherPlayers_teams[i],
+						bufPlayerUpdate->player_valid[i], bufPlayerUpdate->readystatus[i]);
+			}
+		}
 
 		myReadyStatus = bufPlayerUpdate->readystatus[i];
 		break;

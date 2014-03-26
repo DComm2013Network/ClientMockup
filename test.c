@@ -124,6 +124,7 @@ void getInput() {
 
 	case 1:
 		memcpy(bufPlayerJoin->client_player_name, name, MAX_NAME);
+		bufPlayerJoin->selectedChatacter = 1;
 
 		printf("Sending packet 1:\n\tPlayer name: %s\n\n", bufPlayerJoin->client_player_name);
 

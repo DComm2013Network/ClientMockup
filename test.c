@@ -1,9 +1,18 @@
-/*
- * test.c
+/** @ingroup Server */
+/** @{ */
+
+/**
+ * This file contains all methods responsible for our server tester.  This is
+ * 	a console application that takes packet numbers as inputs, makes requests
+ * 	to fill out the data packet and then sends it and then displays the server
+ * 	response.
  *
- *  Created on: 10 Mar 2014
- *      Author: chris
+ *
+ * @file GeneralController.c
  */
+
+/** @} */
+
 
 #include "NetComm.h"
 #include "Server.h"
@@ -103,6 +112,20 @@ int main(int argc, char * argv[]) {
 	return 0;
 }
 
+/**
+ * Gets user input, sends selected packet
+ *
+ * Revisions:
+ *      -# None
+ *
+ * @param[in]   void
+ * @return void
+ *
+ * @designer Chris Holisky
+ * @author Chris Holisky
+ *
+ * @date March 14, 2014
+ */
 void getInput() {
 	PKT_PLAYER_JOIN *bufPlayerJoin = malloc(sizeof(PKT_PLAYER_JOIN));
 	PKT_POS_UPDATE_U *bufPlayerPos = (PKT_POS_UPDATE_U*) malloc(sizeof(PKT_POS_UPDATE_U));
@@ -112,7 +135,7 @@ void getInput() {
 	PKT_TAGGING *bufTag = malloc(sizeof(PKT_TAGGING));
 
 	char name[MAX_NAME] = "test me now!";
-	char name2[MAX_NAME] = "Say name bitch!";
+	char name2[MAX_NAME] = "another test";
 	fscanf(stdin, "%d", &input);
 	int i;
 
@@ -120,8 +143,10 @@ void getInput() {
 	double varDub;
 	char varName[MAX_NAME];
 
+	// each case corresponds to a packet sent from the client to the server
 	switch (input) {
 
+	// initial player setup/ join game
 	case 1:
 		memcpy(bufPlayerJoin->client_player_name, name, MAX_NAME);
 		bufPlayerJoin->selectedChatacter = 1;
@@ -132,6 +157,7 @@ void getInput() {
 		send(s, bufPlayerJoin, sizeof(PKT_PLAYER_JOIN), 0);
 		break;
 
+		// player status update.  Name, team, ready status.
 	case 5:
 		printf("Enter new team number: ");
 		if (fscanf(stdin, "%d", &varInt) > 0) {
@@ -161,16 +187,16 @@ void getInput() {
 		send(s, bufUpdatePlayer, sizeof(PKT_READY_STATUS), 0);
 		break;
 
+		//move player down
 	case 6:
-
 
 		bufPlayerPos->packet = 10;
 		bufPlayerPos->floor = myFloor;
 		bufPlayerPos->player_number = myPlayerNumber;
 		bufPlayerPos->xPos = myPosx;
 		bufPlayerPos->xVel = myVelx;
-		bufPlayerPos->yPos = myPosy+10;
-		bufPlayerPos->yVel = myVely+10;
+		bufPlayerPos->yPos = myPosy + 10;
+		bufPlayerPos->yVel = myVely + 10;
 
 		printf(
 				"Send packet 10:\n\tPlayer number: %d\n\tFloor: %d\n\tnew x position: %d\n\tnew y position: %d\n\tnew x velocity: %f\n\tnew y velocity: %f\n\n",
@@ -180,25 +206,26 @@ void getInput() {
 		sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
 		break;
 
+		// move player down and right
 	case 7:
 
+		bufPlayerPos->packet = 10;
+		bufPlayerPos->floor = myFloor;
+		bufPlayerPos->player_number = myPlayerNumber;
+		bufPlayerPos->xPos = myPosx + 10;
+		bufPlayerPos->xVel = myVelx + 10;
+		bufPlayerPos->yPos = myPosy + 10;
+		bufPlayerPos->yVel = myVely + 10;
 
-			bufPlayerPos->packet = 10;
-			bufPlayerPos->floor = myFloor;
-			bufPlayerPos->player_number = myPlayerNumber;
-			bufPlayerPos->xPos = myPosx+10;
-			bufPlayerPos->xVel = myVelx+10;
-			bufPlayerPos->yPos = myPosy+10;
-			bufPlayerPos->yVel = myVely+10;
+		printf(
+				"Send packet 10:\n\tPlayer number: %d\n\tFloor: %d\n\tnew x position: %d\n\tnew y position: %d\n\tnew x velocity: %f\n\tnew y velocity: %f\n\n",
+				bufPlayerPos->player_number, bufPlayerPos->floor, bufPlayerPos->xPos, bufPlayerPos->yPos,
+				bufPlayerPos->xVel, bufPlayerPos->yVel);
 
-			printf(
-					"Send packet 10:\n\tPlayer number: %d\n\tFloor: %d\n\tnew x position: %d\n\tnew y position: %d\n\tnew x velocity: %f\n\tnew y velocity: %f\n\n",
-					bufPlayerPos->player_number, bufPlayerPos->floor, bufPlayerPos->xPos, bufPlayerPos->yPos,
-					bufPlayerPos->xVel, bufPlayerPos->yVel);
+		sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
+		break;
 
-			sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
-			break;
-
+		// claim objective
 	case 8:
 		for (i = 0; i < MAX_OBJECTIVES; ++i) {
 			bufGameStatus->objectives_captured[i] = 0;
@@ -235,12 +262,14 @@ void getInput() {
 		sendto(u, bufGameStatus, sizeof(PKT_GAME_STATUS_U), 0, (struct sockaddr*) &server, sizeof(server));
 		break;
 
+		// keep alive packet
 	case 9:
 		printf("Send:\n\tWe're doing the Bee Gees!! Oooh, oooh, oooh, oooh.....\n");
 
 		send(s, &input, sizeof(packet_t), 0);
 		break;
 
+		// player movement packet
 	case 10:
 		printf("Enter new x position: ");
 		if (fscanf(stdin, "%d", &varInt) > 0) {
@@ -275,6 +304,7 @@ void getInput() {
 		sendto(u, bufPlayerPos, sizeof(PKT_POS_UPDATE_U), 0, (struct sockaddr*) &server, sizeof(server));
 		break;
 
+		// floor move request packet
 	case 12:
 		printf("Enter floor to move to: ");
 		if (fscanf(stdin, "%d", &varInt) > 0) {
@@ -304,6 +334,7 @@ void getInput() {
 		send(s, bufPlayerFloorMove, sizeof(PKT_FLOOR_MOVE_REQUEST), 0);
 		break;
 
+		// tagging packet
 	case 14:
 		printf("Who is doing the tagging: ");
 		if (fscanf(stdin, "%d", &varInt) > 0) {
@@ -339,6 +370,21 @@ void getInput() {
 	free(bufPlayerFloorMove);
 	free(bufTag);
 }
+
+/**
+ * Gets server TCP response packets, displays results
+ *
+ * Revisions:
+ *      -# None
+ *
+ * @param[in]   void
+ * @return void
+ *
+ * @designer Chris Holisky
+ * @author Chris Holisky
+ *
+ * @date March 14, 2014
+ */
 void getReply() {
 	packet_t response = 0;
 
@@ -354,6 +400,7 @@ void getReply() {
 	recv(s, &response, sizeof(packet_t), 0);
 
 	switch (response) {
+	// server responding to player join
 	case 2:
 		recv(s, bufJoinResponse, sizeof(PKT_JOIN_RESPONSE), 0);
 
@@ -362,6 +409,7 @@ void getReply() {
 				bufJoinResponse->connect_code);
 		break;
 
+		// server responding to player information update
 	case 3:
 		recv(s, bufPlayerUpdate, sizeof(PKT_PLAYERS_UPDATE), 0);
 		i = myPlayerNumber;
@@ -378,10 +426,12 @@ void getReply() {
 		myReadyStatus = bufPlayerUpdate->readystatus[i];
 		break;
 
+		// keep alive packet
 	case 9:
 		printf("We're doing the Bee Gees!! Oooh, oooh, oooh, oooh.....\n");
 		break;
 
+		// server response to floor move request
 	case 13:
 		recv(s, bufFloorMove, sizeof(PKT_FLOOR_MOVE), 0);
 
@@ -404,6 +454,20 @@ void getReply() {
 
 }
 
+/**
+ * Gets server UDP response packets, displays results
+ *
+ * Revisions:
+ *      -# None
+ *
+ * @param[in]   void
+ * @return void
+ *
+ * @designer Chris Holisky
+ * @author Chris Holisky
+ *
+ * @date March 14, 2014
+ */
 void getUDP() {
 	packet_t response = 0;
 
@@ -420,6 +484,7 @@ void getUDP() {
 	response = *((packet_t*) packet);
 
 	switch (response) {
+	// server response / update to objective update packet
 	case 8:
 		memcpy(bufGameStatus, packet + sizeof(packet_t), sizeof(PKT_GAME_STATUS));
 
@@ -432,6 +497,7 @@ void getUDP() {
 		myGameStatus = bufGameStatus->game_status;
 		break;
 
+		// server response to movement packets.  updates all players with positions of players on same floor
 	case 11:
 		memcpy(bufPlayerAllUpdate, packet + sizeof(packet_t), sizeof(PKT_ALL_POS_UPDATE));
 		i = myPlayerNumber;
